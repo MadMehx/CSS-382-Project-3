@@ -63,31 +63,28 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
-        # print(self.values) # prints out an empty list {}
+        # get list of states
+        states = self.mdp.getStates()
 
-        # states = self.mdp.getStates()
-        # prints states ['TERMINAL_STATE', (0, 0), (0, 1), (0, 2)]
-        # print(states)
+        # All the states start with the value of zero
+        values = 0
 
-        """
-        for iteration in (0, self.iterations):
+        # for each new state, update with new values
+        for iteration in range(0, self.iterations):
             values = util.Counter()
             for state in states:
+                # choose best action based on policy
                 action = self.getAction(state)
-                print(action)
-        """
-        # All the states start with the value of zero
 
-        # For each state, update with new value in new_values.
-        for i in range(0, self.iterations):
-            new_values = util.Counter()
-            for state in states:
-                action = self.getAction(state)  # Pick the best action using the policy.
+                # update Q value based on action (if action is not none)
                 if action is not None:
-                    # Get the value from the state, using the maximum utility from the best q-state.
-                    new_values[state] = self.getQValue(state, action)
+                    values[state] = self.getQValue(state, action)
 
-            self.values = new_values
+            # Update Q value
+            self.values = values
+
+        # return q value
+        return values
 
     def getValue(self, state):
         """
@@ -103,16 +100,30 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         "*** YOUR CODE HERE ***"
 
+        """Formula: Q*(s) = sum [ probability * (reward + (discount value *  
+                * [reward + (discount value * q value)) """
+
+        # used for calculating the Q state of actions
         total = 0
-        transStatesAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
 
-        for tranStateAndProb in transStatesAndProbs:
-            tstate = tranStateAndProb[0]
-            prob = tranStateAndProb[1]
-            reward = self.mdp.getReward(state, action, tstate)
-            value = self.getValue(tstate)
-            total += prob * (reward + self.discount * value)
+        # list of transition states and probabilities
+        transitions = self.mdp.getTransitionStatesAndProbs(state, action)
 
+        # loop through list of transitions and calculate the total Q values from performing actions
+        for transition in transitions:
+
+            # transition value
+            transValue = transition[0]
+            # probability value
+            probability = transition[1]
+            # reward value
+            reward = self.mdp.getReward(state, action, transValue)
+            # q value
+            value = self.getValue(transValue)
+            # calculating the total value from each transition
+            total = total + (probability * (reward + self.discount * value))
+
+        # return the total value after each transition
         return total
 
         util.raiseNotDefined()
@@ -128,40 +139,25 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        """
         # return none if the state that agent is on is the terminal state
         if self.mdp.isTerminal(state):
             return None
 
         # if not, then get a list of actions (+ Q values) that the agent can take
         else:
-            bestAction = self.mdp.getPossibleActions(state)
-            bestValues = self.getQValue(state, bestAction)
+            legalActions = self.mdp.getPossibleActions(state)
+            maximum = self.getQValue(state, legalActions[0])
+            bestAction = legalActions[0]
 
         # loop through possible actions, return the best action from the Q value
-        for action in bestAction:
-            value = self.getValue(state, action)
-            if bestValues <= value:
-                bestValues = value
-                bestAction = action
-
-        return bestAction
-        """
-
-        if self.mdp.isTerminal(state):
-            return None
-        else:
-            actions = self.mdp.getPossibleActions(state)
-            max_value = self.getQValue(state, actions[0])
-            max_action = actions[0]
-
-            for action in actions:
+            for action in legalActions:
                 value = self.getQValue(state, action)
-                if max_value <= value:
-                    max_value = value
-                    max_action = action
+                if maximum <= value:
+                    maximum = value
+                    bestAction = action
 
-            return max_action
+            # return best action
+            return bestAction
 
         util.raiseNotDefined()
 
