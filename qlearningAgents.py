@@ -77,19 +77,15 @@ class QLearningAgent(ReinforcementAgent):
         # check for legal actions
         legalActions = self.getLegalActions(state)
 
-        # store set of Q values then find the max
-        qValues = []
-
         # if no legal actions available, then return 0
         if len(legalActions) == 0:
             return 0
         # from legal actions add the Q values into the list
         else:
-            for action in legalActions:
-                qValues.append(self.getQValue(state, action))
+            maximum = max(self.getQValue(state, action) for action in legalActions)
 
         # return max of q values
-        return max(qValues)
+        return maximum
 
         util.raiseNotDefined()
 
@@ -101,7 +97,7 @@ class QLearningAgent(ReinforcementAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        # check of legal moves
+        # check for legal moves
         legalActions = self.getLegalActions(state)
 
         # if no legal moves possible, return None
@@ -114,6 +110,7 @@ class QLearningAgent(ReinforcementAgent):
             # loop through legal actions to find best action
             for action in legalActions:
                 value = self.getQValue(state, action)
+
                 # find maximum Q value
                 if value > maximum or bestAction == None:
                     maximum = value

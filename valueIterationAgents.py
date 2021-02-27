@@ -63,24 +63,24 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
-        # get list of states
-        states = self.mdp.getStates()
-
-        # All the states start with the value of zero
+        # all the states start with the value of zero
         values = 0
 
-        # for each new state, update with new values
-        for iteration in range(0, self.iterations):
+        # loop through each iteration then update values at the end of each loop (iteration)
+        for iteration in range(self.iterations):
             values = util.Counter()
-            for state in states:
-                # choose best action based on policy
+
+            # loop through each state and its action
+            for state in self.mdp.getStates():
+
+                # get action for that state
                 action = self.getAction(state)
 
-                # update Q value based on action (if action is not none)
+                # update q value based on action (if action is not none)
                 if action is not None:
-                    values[state] = self.getQValue(state, action)
+                    values[state] = self.computeQValueFromValues(state, action)
 
-            # Update Q value
+            # update q value
             self.values = values
 
         # return q value
@@ -149,7 +149,7 @@ class ValueIterationAgent(ValueEstimationAgent):
             maximum = self.getQValue(state, legalActions[0])
             bestAction = legalActions[0]
 
-        # loop through possible actions, return the best action from the Q value
+        # loop through possible actions, return the best action from the max Q value
             for action in legalActions:
                 value = self.getQValue(state, action)
                 if maximum <= value:
@@ -200,6 +200,34 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+
+        # get list of states
+        states = self.mdp.getStates()
+
+        # all the states start with the value of zero
+        maximum = 0
+
+        # loop through each iteration
+        for iteration in range(self.iterations):
+
+            # update a single state using the number of iteration % total number of states
+            state = states[iteration % len(states)]
+
+            # check to see if state is not terminal
+            if not self.mdp.isTerminal(state):
+
+                # get possible actions from state
+                actions = self.mdp.getPossibleActions(state)
+
+                # get the maximum value
+                maximum = max(self.getQValue(state, action) for action in actions)
+
+                # update self.values[state] with the maximum value
+                self.values[state] = maximum
+
+        # return maximum value
+        return maximum
+
 
 class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
     """
