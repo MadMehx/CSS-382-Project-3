@@ -45,7 +45,7 @@ class QLearningAgent(ReinforcementAgent):
         ReinforcementAgent.__init__(self, **args)
 
         "*** YOUR CODE HERE ***"
-        self.qvalues = {}
+        self.values = {}
 
     def getQValue(self, state, action):
         """
@@ -56,12 +56,12 @@ class QLearningAgent(ReinforcementAgent):
         "*** YOUR CODE HERE ***"
 
         # If never seen this state before, return 0
-        if (state, action) not in self.qvalues:
+        if (state, action) not in self.values:
             return 0
 
         # Else, if state is in the list then return q(state, action)
         else:
-            return self.qvalues[state, action]
+            return self.values[state, action]
 
         util.raiseNotDefined()
 
@@ -103,21 +103,19 @@ class QLearningAgent(ReinforcementAgent):
         # if no legal moves possible, return None
         if len(legalActions) == 0:
             return None
+
+        # Otherwise, find the best Action based on Q values
         else:
-            # Otherwise, find the best Action based on Q values
-            bestAction = None
-            maximum = 0
-            # loop through legal actions to find best action
+
+            # list to store q values
+            values = util.Counter()
+
+            # loop through list of legal (possible) actions and fill list
             for action in legalActions:
-                value = self.getQValue(state, action)
+                values[action] = self.getQValue(state, action)
 
-                # find maximum Q value
-                if value > maximum or bestAction == None:
-                    maximum = value
-                    bestAction = action
-
-            # return bestAction based on Q value
-            return bestAction
+            # return largest q value from list
+            return values.argMax()
 
         util.raiseNotDefined()
 
@@ -144,14 +142,14 @@ class QLearningAgent(ReinforcementAgent):
 
         # with probability epsilon, we should take a random legal action
         else:
-            # flipCoin returns a boolean statement with probability as its parameter
+
+            # do a random action based on legal actions
             if util.flipCoin(self.epsilon):
                 return random.choice(legalActions)
-            else:
-                action = self.computeActionFromQValues(state)
 
-        # return best policy action
-        return action
+            # perform an optimal action based on current state
+            else:
+                return self.computeActionFromQValues(state)
 
         util.raiseNotDefined()
 
@@ -182,7 +180,7 @@ class QLearningAgent(ReinforcementAgent):
         total = value + self.alpha * (reward + (self.discount * maximum) - value)
 
         # update q value
-        self.qvalues[(state, action)] = total
+        self.values[state, action] = total
 
         # return calculation of the updated q value
         return total
@@ -249,6 +247,9 @@ class ApproximateQAgent(PacmanQAgent):
           where * is the dotProduct operator
         """
         "*** YOUR CODE HERE ***"
+
+        weight = self.getWeights()
+        featureVector = self.featExtractor.get
         util.raiseNotDefined()
 
     def update(self, state, action, nextState, reward):

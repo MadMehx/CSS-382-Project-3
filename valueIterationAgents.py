@@ -63,11 +63,10 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
-        # all the states start with the value of zero
-        values = 0
-
         # loop through each iteration then update values at the end of each loop (iteration)
         for iteration in range(self.iterations):
+
+            # assign an empty set
             values = util.Counter()
 
             # loop through each state and its action
@@ -76,15 +75,12 @@ class ValueIterationAgent(ValueEstimationAgent):
                 # get action for that state
                 action = self.getAction(state)
 
-                # update q value based on action (if action is not none)
+                # fill variable values with a list of q values based on action (if action is not none)
                 if action is not None:
                     values[state] = self.computeQValueFromValues(state, action)
 
-            # update q value
+            # update list of q values
             self.values = values
-
-        # return q value
-        return values
 
     def getValue(self, state):
         """
@@ -106,24 +102,22 @@ class ValueIterationAgent(ValueEstimationAgent):
         # used for calculating the Q state of actions
         total = 0
 
-        # list of transition states and probabilities
-        transitions = self.mdp.getTransitionStatesAndProbs(state, action)
-
         # loop through list of transitions and calculate the total Q values from performing actions
-        for transition in transitions:
+        for transition in self.mdp.getTransitionStatesAndProbs(state, action):
 
-            # transition value
-            transValue = transition[0]
             # probability value
             probability = transition[1]
+
             # reward value
-            reward = self.mdp.getReward(state, action, transValue)
-            # q value
-            value = self.getValue(transValue)
-            # calculating the total value from each transition
+            reward = self.mdp.getReward(state, action, transition)
+
+            # current value
+            value = self.getValue(transition[0])
+
+            # calculating the sum of Q values by using the formula
             total = total + (probability * (reward + self.discount * value))
 
-        # return the total value after each transition
+        # return the sum of Q values
         return total
 
         util.raiseNotDefined()
@@ -143,21 +137,21 @@ class ValueIterationAgent(ValueEstimationAgent):
         if self.mdp.isTerminal(state):
             return None
 
-        # if not, then get a list of actions (+ Q values) that the agent can take
+        # if not, then get a list of Q values that the agent can take
         else:
+
+            # store Q values
+            value = util.Counter()
+
+            # list of legal actions from state
             legalActions = self.mdp.getPossibleActions(state)
-            maximum = self.getQValue(state, legalActions[0])
-            bestAction = legalActions[0]
 
-        # loop through possible actions, return the best action from the max Q value
+            # loop through possible actions and fill in list with Q values
             for action in legalActions:
-                value = self.getQValue(state, action)
-                if maximum <= value:
-                    maximum = value
-                    bestAction = action
+                value[action] = self.getQValue(state, action)
 
-            # return best action
-            return bestAction
+            # return the largest Q value
+            return value.argMax()
 
         util.raiseNotDefined()
 
@@ -249,3 +243,13 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
 
+        # initialize a priority queue
+        priorityQueue = util.PriorityQueue()
+
+        # predecessor implemented with a set to avoid duplications
+        predecessor = {}
+
+        # loop through states
+        for state in self.mdp.getStates():
+            if not self.mdp.isTerminal(state):
+                diff = abs(self.value[state] - max())
