@@ -68,16 +68,16 @@ class ValueIterationAgent(ValueEstimationAgent):
         # loop through each iteration then update values at the end of each loop (iteration)
         for iteration in range(self.iterations):
 
-            # assign an empty set
+            # assign a empty dictionary whose values all start with 0
             values = util.Counter()
 
-            # loop through each state and its action
+            # loop through each state from list of states
             for state in self.mdp.getStates():
 
-                # returns the policy at the state
+                # returns the policy at the state; calls computeActionFromValues for current state
                 action = self.getAction(state)
 
-                # fill variable: values with q values
+                # fill dictionary with q values
                 if action is not None:
                     values[state] = self.computeQValueFromValues(state, action)
 
@@ -97,25 +97,22 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        """Formula: Q*(s) = sum [ probability * (reward + (discount value *  
-                * [reward + (discount value * q value)) """
+        """Formula: Q*(s) = sum [ probability * (reward + (discount value * q value)] """
 
-        # used for calculating the Q state of actions
+        # used for calculating the sum of Q values
         total = 0
 
-        # loop through list of transitions and calculate the total Q values from performing actions
-        for transition in self.mdp.getTransitionStatesAndProbs(state, action):
-            # probability value
-            probability = transition[1]
+        # loop through list of transitions and calculate the sum of Q values
+        for nextState, probability in self.mdp.getTransitionStatesAndProbs(state, action):
 
             # reward value
-            reward = self.mdp.getReward(state, action, transition)
+            reward = self.mdp.getReward(state, action, nextState)
 
-            # current value
-            value = self.getValue(transition[0])
+            # future state
+            value = self.getValue(nextState)
 
-            # calculating the sum of Q values by using the formula
-            total = total + (probability * (reward + self.discount * value))
+            # calculating the sum of Q values by using the formula:
+            total = total + (probability * (reward + (self.discount * value)))
 
         # return the sum of Q values
         return total
@@ -211,6 +208,7 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
 
             # check to see if state is not terminal
             if not self.mdp.isTerminal(state):
+
                 # get possible actions from state
                 actions = self.mdp.getPossibleActions(state)
 
@@ -222,7 +220,6 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
 
         # return maximum value
         return maximum
-
 
 class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
     """
@@ -297,7 +294,6 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
                 state = priorityQueue.pop()
                 # check to see if state is not a terminal state and proceed with the self.value update
                 if not self.mdp.isTerminal(state):
-
                     # calculate the maximum Q value from all states
                     maximum = max(self.computeQValueFromValues(state, action)
                                   for action in self.mdp.getPossibleActions(state))
@@ -316,6 +312,6 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
                     # and the highest Q-value across all possible actions from predecessors
                     diff = abs(self.values[predecessor] - maxValue)
 
-                    
+                    # update priority queue with a priority on diff
                     if diff > self.theta:
                         priorityQueue.update(predecessor, -diff)
