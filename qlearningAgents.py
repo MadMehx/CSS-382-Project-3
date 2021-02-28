@@ -45,7 +45,7 @@ class QLearningAgent(ReinforcementAgent):
         ReinforcementAgent.__init__(self, **args)
 
         "*** YOUR CODE HERE ***"
-        self.values = {}
+        self.values = util.Counter()
 
     def getQValue(self, state, action):
         """
@@ -55,13 +55,8 @@ class QLearningAgent(ReinforcementAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        # If never seen this state before, return 0
-        if (state, action) not in self.values:
-            return 0
-
-        # Else, if state is in the list then return q(state, action)
-        else:
-            return self.values[state, action]
+        # returns 0 if the state has never been before (dictionary), otherwise returns Q node value
+        return self.values[state, action]
 
         util.raiseNotDefined()
 
@@ -164,7 +159,7 @@ class QLearningAgent(ReinforcementAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        """Formula for new Q state New Q value for new state and action: NewQ(s,a) = current q value + learning value 
+        """Formula for New Q value for new state and action: NewQ(s,a) = current q value + learning value 
         * [reward + (discount value * maximum expected future reward) - current q value] """
 
         # used for calculating the new Q state
