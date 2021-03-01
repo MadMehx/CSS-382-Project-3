@@ -75,7 +75,7 @@ class QLearningAgent(ReinforcementAgent):
         # if no legal actions available, then return 0
         if len(legalActions) == 0:
             return 0
-        # from legal actions add the Q values into the list
+        # from legal actions add the Q values into the list and calculate the maximum
         else:
             maximum = max(self.getQValue(state, action) for action in legalActions)
 
@@ -159,26 +159,20 @@ class QLearningAgent(ReinforcementAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        """Formula for New Q value for new state and action: NewQ(s,a) = current q value + learning value 
-        * [reward + (discount value * maximum expected future reward) - current q value] """
+        """Formula for updating the Qvalue - alpha as learning rate(1 - alpha) * oldValue + alpha
+         * (reward + discounted future reward) """
 
-        # used for calculating the new Q state
-        total = 0
+        # old q value
+        oldValue = self.getQValue(state, action)
 
         # maximum future reward for next state
-        maximum = self.computeValueFromQValues(nextState)
-
-        # current q value
-        value = self.getQValue(state, action)
+        discountedFutureReward = self.discount * self.computeValueFromQValues(nextState)
 
         # calculating the next q value
-        total = value + self.alpha * (reward + (self.discount * maximum) - value)
+        total = (1 - self.alpha) * oldValue + self.alpha * (reward + discountedFutureReward)
 
         # update q value
         self.values[state, action] = total
-
-        # return calculation of the updated q value
-        return total
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
