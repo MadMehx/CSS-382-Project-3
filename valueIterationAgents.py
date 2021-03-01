@@ -77,7 +77,7 @@ class ValueIterationAgent(ValueEstimationAgent):
                 # returns the policy at the state; calls computeActionFromValues for current state
                 action = self.getAction(state)
 
-                # fill dictionary with q values
+                # fill dictionary with q values if action is not None
                 if action is not None:
                     values[state] = self.computeQValueFromValues(state, action)
 

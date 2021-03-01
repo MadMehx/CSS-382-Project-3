@@ -75,6 +75,7 @@ class QLearningAgent(ReinforcementAgent):
         # if no legal actions available, then return 0
         if len(legalActions) == 0:
             return 0
+
         # from legal actions add the Q values into the list and calculate the maximum
         else:
             maximum = max(self.getQValue(state, action) for action in legalActions)
@@ -131,7 +132,7 @@ class QLearningAgent(ReinforcementAgent):
         action = None
         "*** YOUR CODE HERE ***"
 
-        # if no legal moves then return none since it is terminal state
+        # if no legal moves, then return none since it is terminal state
         if len(legalActions) == 0:
             return None
 
@@ -240,12 +241,17 @@ class ApproximateQAgent(PacmanQAgent):
         # declare value for returning
         qValue = 0
 
-        # extract features for dotProducting later
+        # weight
+        weight = self.weights
+
+        # featureVector
         featureVector = self.featExtractor.getFeatures(state, action)
 
-        # multiply feature
+        # loop through featureVector and calculate sum of weight scores
         for feature in featureVector:
-            qValue += self.weights[feature] * featureVector[feature]
+            qValue = qValue + (weight[feature] * featureVector[feature])
+
+        # return sum of weight scores
         return qValue
 
     def update(self, state, action, nextState, reward):
@@ -253,15 +259,19 @@ class ApproximateQAgent(PacmanQAgent):
            Should update your weights based on transition
         """
         "*** YOUR CODE HERE ***"
-        # gets features
+
+        # weight
+        weight = self.weights
+
+        # featureVector
         featureVector = self.featExtractor.getFeatures(state, action)
 
-        # difference is based on reward + disconted future value - Qvalue
-        difference = reward + self.discount * self.getValue(nextState) - self.getQValue(state, action)
+        # difference is based on [reward + discounted future value] - Qvalue
+        difference = (reward + (self.discount * self.getValue(nextState))) - self.getQValue(state, action)
 
-        # assigns new weight by adding old weight to alpha * difference * feature vector of state and action
+        # updates weight by adding old weight to alpha * difference * feature vector of state and action
         for feature in featureVector:
-            self.weights[feature] = self.weights[feature] + self.alpha * difference * featureVector[feature]
+            weight[feature] = weight[feature] + self.alpha * difference * featureVector[feature]
 
     def final(self, state):
         "Called at the end of each game."
